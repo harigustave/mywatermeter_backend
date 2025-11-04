@@ -10,7 +10,7 @@ app.post("/analyze", upload.single("image"), (req, res) => {
   const { meterId, meterOwner, timestamp} = req.body;
   const imagePath = req.file.path;
 
-  const py = spawn("python3", ["model/infer.py", imagePath]);
+  const py = spawn("python3", ["infer.py", imagePath]);
 
   let data = "";
   py.stdout.on("data", (chunk) => (data += chunk));
