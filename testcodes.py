@@ -11,7 +11,8 @@ os.environ["YOLO_VERBOSE"] = "False"
 import model  # import your existing model.py
 
 # Get the image path from the command line argument
-image_path = sys.argv[1] if len(sys.argv) > 1 else "meterimage.jpeg"
+# image_path = sys.argv[1] if len(sys.argv) > 1 else "meterimage.jpeg"
+image_path = sys.argv[1]
 
 # Run your model function
 try:
