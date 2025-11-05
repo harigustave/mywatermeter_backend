@@ -81,10 +81,10 @@ def testModel(image_path, conf=0.35, img_sz=640):
             resized_img = resize_by_fixed_side(og_img, img_sz)
             label_img = resized_img.copy()
             write_text_in_center(label_img, meter_value)
-            cv2.imshow(f'Meter Value: {meter_value}', label_img)
-            cv2.imshow('ROI', cropped_roi)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+            # cv2.imshow(f'Meter Value: {meter_value}', label_img)
+            # cv2.imshow('ROI', cropped_roi)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
 
     return meter_value
 
