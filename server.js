@@ -6,26 +6,29 @@ import fs from "fs";
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
+// Use absolute Python path
+// const PYTHON_PATH = "C:\\Users\\gharintwari\\AppData\\Local\\Programs\\Python\\Python312\\python.exe";
+
+// app.post("/analyze", (req, res) => {
+//   const py = spawn(PYTHON_PATH, ["testcodes.py"]);
+// Accept image uploads
 app.post("/analyze", upload.single("image"), (req, res) => {
-  const { meterId, meterOwner, timestamp} = req.body;
+
+  const PYTHON_PATH = "python3";
+
   const imagePath = req.file.path;
 
-  const py = spawn("python3", ["infer.py", imagePath]);
-
+  const py = spawn(PYTHON_PATH, ["testcodes.py", imagePath]);
   let data = "";
   py.stdout.on("data", (chunk) => (data += chunk));
   py.stderr.on("data", (err) => console.error("Python error:", err.toString()));
 
   py.on("close", (code) => {
-    fs.unlinkSync(imagePath); // remove temp file
     try {
       const parsed = JSON.parse(data);
       res.json({
         success: true,
-        MeterNumber: meterId,
-        MeterOwner: meterOwner,
-        RecordDate: timestamp,
-        meterReading: parsed.reading,
+        meterReading: parsed.reading
       });
     } catch (err) {
       res.status(500).json({ success: false, error: err.message });
