@@ -1,47 +1,20 @@
-# Dockerfile — Render-Proof, Debug-Enabled, Fail-Fast
-FROM python:3.10-slim
+# Use an official lightweight Node.js image
+FROM node:20-slim
 
-# Install Node.js 20 + build tools
-RUN apt-get update && \
-    apt-get install -y curl gnupg build-essential && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install OpenCV runtime dependencies (critical for cv2)
-RUN apt-get update && \
-    apt-get install -y libgl1-mesa-glx libglib2.0-0 && \
-    rm -rf /var/lib/apt/lists/*
-
-# Set working directory
+# Create and set the working directory
 WORKDIR /app
 
-# Copy requirements.txt to a safe temp location
-COPY requirements.txt /tmp/requirements.txt
+# Copy package.json and package-lock.json first (for better caching)
+COPY package*.json ./
 
-# DEBUG: Confirm file exists and show content
-RUN echo "=== DEBUG: requirements.txt FOUND ===" && \
-    ls -la /tmp/requirements.txt && \
-    cat /tmp/requirements.txt && \
-    echo "=== END DEBUG ==="
+# Install dependencies
+RUN npm install --production
 
-# Upgrade pip and install Python packages with VERBOSE + FAIL ON ERROR
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir --verbose -r /tmp/requirements.txt || \
-    (echo "=== PIP INSTALL FAILED — SEE ABOVE LOG ===" && exit 1)
-
-# Verify all required packages can be imported
-RUN python -c "import numpy, cv2, torch, ultralytics, PIL; print('ALL PACKAGES IMPORTED SUCCESSFULLY!')"
-
-# Copy the rest of the application
+# Copy the rest of your source code
 COPY . .
 
-# Install Node.js dependencies
-RUN npm install
-
-# Expose port
+# Expose the port your app will listen on
 EXPOSE 10000
 
-# Start the server
-CMD ["npm", "start"]
+# Start the backend
+CMD ["node", "server.js"]

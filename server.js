@@ -1,40 +1,70 @@
 import express from "express";
 import multer from "multer";
-import { spawn } from "child_process";
+import cors from "cors";
+import fetch from "node-fetch";
 import fs from "fs";
 
 const app = express();
+const PORT = process.env.PORT || 10000;
+
+// Enable CORS for all routes
+app.use(cors());
+
+// Create a storage engine for multer (stores uploads temporarily)
 const upload = multer({ dest: "uploads/" });
 
-// Use absolute Python path
-// const PYTHON_PATH = "C:\\Users\\gharintwari\\AppData\\Local\\Programs\\Python\\Python312\\python.exe";
-
-// app.post("/analyze", (req, res) => {
-//   const py = spawn(PYTHON_PATH, ["testcodes.py"]);
-// Accept image uploads
-app.post("/analyze", upload.single("image"), (req, res) => {
-
-  const PYTHON_PATH = "python";
-
-  // const imagePath = req.file.path;
-   const imagePath = "meterimage.jpeg";
-
-  const py = spawn(PYTHON_PATH, ["testcodes.py", imagePath]);
-  let data = "";
-  py.stdout.on("data", (chunk) => (data += chunk));
-  py.stderr.on("data", (err) => console.error("Python error:", err.toString()));
-
-  py.on("close", (code) => {
-    try {
-      const parsed = JSON.parse(data);
-      res.json({
-        success: true,
-        meterReading: parsed.reading
-      });
-    } catch (err) {
-      res.status(500).json({ success: false, error: err.message });
-    }
-  });
+// -----------------------------
+// 🔹 1. Root route
+// -----------------------------
+app.get("/", (req, res) => {
+  res.send("✅ WaterMeter Backend is running successfully on Render!");
 });
 
-app.listen(10000, () => console.log("Server running on port 10000"));
+// -----------------------------
+// 🔹 2. Upload & Send to Hugging Face
+// -----------------------------
+app.post("/predict", upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No image uploaded" });
+    }
+
+    const imagePath = req.file.path;
+    const imageData = fs.readFileSync(imagePath);
+
+    // Replace this URL with your Hugging Face Space API endpoint
+    const hfEndpoint = "https://harigustave-watermeterapp.hf.space/api/predict/";
+
+    // Send image to Hugging Face API
+    const response = await fetch(hfEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        data: [`data:image/jpeg;base64,${imageData.toString("base64")}`],
+      }),
+    });
+
+    const result = await response.json();
+
+    // Delete uploaded file to save space
+    fs.unlinkSync(imagePath);
+
+    // Send Hugging Face model response back to frontend
+    res.json({
+      success: true,
+      prediction: result.data ? result.data[0] : "No result returned",
+    });
+  } catch (error) {
+    console.error("Prediction error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// -----------------------------
+// 🔹 3. Start server
+// -----------------------------
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
