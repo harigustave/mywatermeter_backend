@@ -9,10 +9,9 @@ COPY . .
 
 RUN pip install numpy
 
-# Upgrade pip and install Python dependencies
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
-    echo "Python packages installed:" && pip list
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+RUN echo "Python packages installed:" && pip list
 
 # Install Node.js dependencies
 RUN npm install
