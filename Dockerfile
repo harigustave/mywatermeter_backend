@@ -7,6 +7,8 @@ WORKDIR /app
 # Copy all project files
 COPY . .
 
+RUN pip install numpy
+
 # Upgrade pip and install Python dependencies
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt && \
