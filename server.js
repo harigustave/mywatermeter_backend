@@ -3,6 +3,9 @@ import multer from "multer";
 import { spawn } from "child_process";
 import fs from "fs";
 
+const { execSync } = require("child_process");
+console.log(execSync("python -m pip list").toString());
+
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
