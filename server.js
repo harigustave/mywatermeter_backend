@@ -3,7 +3,9 @@ import multer from "multer";
 import { spawn } from "child_process";
 import fs from "fs";
 
-const { execSync } = require("child_process");
+import { execSync } from "node:child_process"; //ES module import
+
+// Log Python packages
 console.log(execSync("python -m pip list").toString());
 
 const app = express();
