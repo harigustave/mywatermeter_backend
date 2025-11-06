@@ -17,6 +17,7 @@ COPY . .
 # Upgrade pip and install Python dependencies
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
+RUN echo "Python packages installed inside Docker:" && python -m pip list
 
 # Install Node.js dependencies
 RUN npm install

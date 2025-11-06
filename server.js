@@ -19,7 +19,7 @@ const upload = multer({ dest: "uploads/" });
 // Accept image uploads
 app.post("/analyze", upload.single("image"), (req, res) => {
 
-  const PYTHON_PATH = "python3";
+  const PYTHON_PATH = "python";
 
   const imagePath = req.file.path;
 

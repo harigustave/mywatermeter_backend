@@ -1,5 +1,5 @@
+numpy
 opencv-python
 torch
 ultralytics
 pillow
-numpy
