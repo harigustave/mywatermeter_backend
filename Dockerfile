@@ -1,23 +1,28 @@
-# Use official Python 3.10
+# Use Python 3.10 slim
 FROM python:3.10-slim
 
-# Install Node.js
+# Install Node.js 20 + build tools
 RUN apt-get update && \
-    apt-get install -y curl gnupg && \
+    apt-get install -y curl gnupg build-essential && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs build-essential && \
-    apt-get clean
+    apt-get install -y nodejs && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy all project files
-COPY . .
+# Copy requirements first (enables Docker layer caching)
+COPY requirements.txt .
 
-# Upgrade pip and install Python dependencies
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
-RUN echo "Python packages installed inside Docker:" && python -m pip list
+# Upgrade pip and install Python packages
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    echo "Installed packages:" && \
+    python -m pip list | grep -E "numpy|opencv|torch|ultralytics|pillow"
+
+# Copy the rest of the app
+COPY . .
 
 # Install Node.js dependencies
 RUN npm install
@@ -25,5 +30,5 @@ RUN npm install
 # Expose port
 EXPOSE 10000
 
-# Start Node server
+# Start the app
 CMD ["npm", "start"]
