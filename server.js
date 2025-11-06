@@ -35,10 +35,6 @@ app.post("/predict", upload.single("image"), async (req, res) => {
     // Replace this URL with your Hugging Face Space API endpoint
     const hfEndpoint = "https://hf.space/embed/harigustave/watermeterapp/api/predict/";
 
-    const responseText = await response.text();
-    console.log("HF Response:", responseText);
-    const result = JSON.parse(responseText);
-
     // Send image to Hugging Face API
     const response = await fetch(hfEndpoint, {
       method: "POST",
@@ -51,6 +47,10 @@ app.post("/predict", upload.single("image"), async (req, res) => {
     });
 
     // const result = await response.json();
+
+    const responseText = await response.text();
+    console.log("HF Response:", responseText);
+    const result = JSON.parse(responseText);
 
     // Delete uploaded file to save space
     fs.unlinkSync(imagePath);
