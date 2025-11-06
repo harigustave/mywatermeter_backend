@@ -1,30 +1,26 @@
-# Use a base image that includes both Python and Node.js
+# Use a base image with Python 3.10 and Node.js 20
 FROM nikolaik/python-nodejs:python3.10-nodejs20
 
 # Set working directory
 WORKDIR /app
 
-# Copy only requirement files first for caching
+# Copy project files
+COPY package.json package-lock.json* ./
 COPY requirements.txt ./
+COPY server.js model.py testcodes.py ./
 
-# Upgrade pip and install Python dependencies
-RUN python -m pip install --upgrade pip
+# Install Python dependencies first
+RUN python -m pip install --upgrade pip setuptools wheel
 RUN python -m pip install --no-cache-dir -r requirements.txt
-
-# Show installed packages clearly in logs
-RUN echo "Installed Python packages:" && python -m pip list
-
-# Copy the rest of your project files
-COPY . .
 
 # Install Node.js dependencies
 RUN npm install
 
-# Ensure Python path includes /app (important for Render)
-ENV PYTHONPATH=/app
+# Copy any other files (optional, if you have static resources)
+COPY . .
 
-# Expose the port your Node.js backend uses
+# Expose backend port
 EXPOSE 10000
 
-# Start your Node.js server
+# Start the Node server
 CMD ["npm", "start"]
