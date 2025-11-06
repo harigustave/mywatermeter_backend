@@ -3,11 +3,6 @@ import multer from "multer";
 import { spawn } from "child_process";
 import fs from "fs";
 
-import { execSync } from "node:child_process"; //ES module import
-
-// Log Python packages
-console.log(execSync("python -m pip list").toString());
-
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
@@ -21,7 +16,8 @@ app.post("/analyze", upload.single("image"), (req, res) => {
 
   const PYTHON_PATH = "python";
 
-  const imagePath = req.file.path;
+  // const imagePath = req.file.path;
+   const imagePath = "meterimage.jpeg";
 
   const py = spawn(PYTHON_PATH, ["testcodes.py", imagePath]);
   let data = "";
