@@ -33,7 +33,7 @@ app.post("/predict", upload.single("image"), async (req, res) => {
     const imageData = fs.readFileSync(imagePath);
 
     // Replace this URL with your Hugging Face Space API endpoint
-    const hfEndpoint = "https://harigustave-watermeterapp.hf.space/api/predict/";
+    const hfEndpoint = "https://hf.space/embed/harigustave/watermeterapp/api/predict/";
 
     // Send image to Hugging Face API
     const response = await fetch(hfEndpoint, {
