@@ -1,7 +1,7 @@
-# Use Python 3.10 slim
+# Dockerfile — Render-Optimized + Debug
 FROM python:3.10-slim
 
-# Install Node.js 20 + build tools
+# Install Node.js 20
 RUN apt-get update && \
     apt-get install -y curl gnupg build-essential && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
@@ -9,26 +9,32 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements first (enables Docker layer caching)
+# COPY requirements.txt FIRST
 COPY requirements.txt .
 
-# Upgrade pip and install Python packages
+# DEBUG: Show file exists and content
+RUN echo "=== requirements.txt FOUND ===" && \
+    ls -la requirements.txt && \
+    cat requirements.txt && \
+    echo "=== END DEBUG ==="
+
+# INSTALL WITH VERBOSE + FAIL ON ERROR
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
-    echo "Installed packages:" && \
+    pip install --no-cache-dir --verbose -r requirements.txt || \
+    (echo "PIP INSTALL FAILED" && exit 1)
+
+# Verify installation
+RUN python -c "import numpy, cv2, torch, ultralytics, PIL; print('ALL PACKAGES LOADED!')" && \
+    echo "INSTALLED PACKAGES:" && \
     python -m pip list | grep -E "numpy|opencv|torch|ultralytics|pillow"
 
-# Copy the rest of the app
+# Now copy the rest
 COPY . .
 
-# Install Node.js dependencies
+# Install Node deps
 RUN npm install
 
-# Expose port
 EXPOSE 10000
-
-# Start the app
 CMD ["npm", "start"]
