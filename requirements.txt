@@ -1,2 +1,5 @@
-ultralytics
+numpy
+opencv-python
 torch
+ultralytics
+pillow
