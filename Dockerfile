@@ -4,23 +4,26 @@ FROM nikolaik/python-nodejs:python3.10-nodejs20
 # Set working directory
 WORKDIR /app
 
-# Copy project files
-COPY package.json package-lock.json* ./
+# Copy only the requirements first (for caching)
 COPY requirements.txt ./
-COPY server.js model.py testcodes.py ./
 
-# Install Python dependencies first
+# Upgrade pip, setuptools, wheel first
 RUN python -m pip install --upgrade pip setuptools wheel
+
+# Install Python dependencies from requirements.txt
 RUN python -m pip install --no-cache-dir -r requirements.txt
+
+# Copy Node dependencies files
+COPY package.json package-lock.json* ./
 
 # Install Node.js dependencies
 RUN npm install
 
-# Copy any other files (optional, if you have static resources)
+# Copy the rest of the app code
 COPY . .
 
 # Expose backend port
 EXPOSE 10000
 
-# Start the Node server
+# Start Node server
 CMD ["npm", "start"]
