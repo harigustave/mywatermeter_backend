@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import multer from "multer";
 import cors from "cors";
@@ -17,7 +20,7 @@ const upload = multer({ dest: "uploads/" });
 // 🔹 1. Root route
 // -----------------------------
 app.get("/", (req, res) => {
-  res.send("✅ WaterMeter Backend is running successfully on Render!");
+  res.send("WaterMeter Backend is running successfully on Render!");
 });
 
 // -----------------------------
@@ -70,5 +73,5 @@ app.post("/predict", upload.single("image"), async (req, res) => {
 // 🔹 3. Start server
 // -----------------------------
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
