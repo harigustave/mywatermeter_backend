@@ -3,75 +3,75 @@ dotenv.config();
 
 import express from "express";
 import multer from "multer";
-import cors from "cors";
 import fetch from "node-fetch";
+import cors from "cors";
 import fs from "fs";
 
 const app = express();
-const PORT = process.env.PORT || 10000;
-
-// Enable CORS for all routes
 app.use(cors());
-
-// Create a storage engine for multer (stores uploads temporarily)
 const upload = multer({ dest: "uploads/" });
 
-// -----------------------------
-// 🔹 1. Root route
-// -----------------------------
-app.get("/", (req, res) => {
-  res.send("WaterMeter Backend is running successfully on Render!");
-});
+// Correct Hugging Face Inference API endpoint
+const hfUrl = "https://router.huggingface.co/hf-inference/models/harigustave/watermeterapp";
 
-// -----------------------------
-// 🔹 2. Upload & Send to Hugging Face
-// -----------------------------
+// Read token from Render environment
+const HF_TOKEN = process.env.HF_TOKEN;
+
 app.post("/predict", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No image uploaded" });
     }
 
-    const imagePath = req.file.path;
-    const imageData = fs.readFileSync(imagePath);
+    const imageBytes = fs.readFileSync(req.file.path);
 
-    // Replace this URL with your Hugging Face Space API endpoint
-    const hfEndpoint = "https://hf.space/embed/harigustave/watermeterapp/api/predict/";
-
-    // Send image to Hugging Face API
-    const response = await fetch(hfEndpoint, {
+    // Send image to Hugging Face Inference API
+    const response = await fetch(hfUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        Authorization: `Bearer ${HF_TOKEN}`,
+        "Content-Type": "application/octet-stream",
       },
-      body: JSON.stringify({
-        data: [`data:image/jpeg;base64,${imageData.toString("base64")}`],
-      }),
+      body: imageBytes,
     });
 
-    // const result = await response.json();
+    const result = await response.json();
 
-    const responseText = await response.text();
-    console.log("HF Response:", responseText);
-    const result = JSON.parse(responseText);
+    // Handle potential HF errors
+    if (!response.ok) {
+      return res.status(response.status).json({
+        success: false,
+        error: result.error || "Hugging Face request failed",
+      });
+    }
 
-    // Delete uploaded file to save space
-    fs.unlinkSync(imagePath);
+    // Extract prediction text dynamically
+    let prediction = "Unknown";
+    if (Array.isArray(result) && result.length > 0) {
+      prediction = result[0].generated_text || result[0].text || JSON.stringify(result[0]);
+    } else if (result.generated_text) {
+      prediction = result.generated_text;
+    } else if (result.text) {
+      prediction = result.text;
+    } else if (result.data) {
+      prediction = result.data[0];
+    }
 
-    // Send Hugging Face model response back to frontend
-    res.json({
-      success: true,
-      prediction: result.data ? result.data[0] : "No result returned",
-    });
+    // Cleanup temp file
+    fs.unlinkSync(req.file.path);
+
+    // Send response back to MAUI app
+    res.json({ success: true, prediction });
   } catch (error) {
     console.error("Prediction error:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// -----------------------------
-// 🔹 3. Start server
-// -----------------------------
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Health check
+app.get("/", (req, res) => {
+  res.send("Water Meter Backend Running on Render");
 });
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
