@@ -19,6 +19,7 @@
   "homepage": "https://github.com/harigustave/mywatermeter_backend#readme",
   "description": "",
   "dependencies": {
+    "@gradio/client": "^2.0.0-dev.1",
     "axios": "^1.13.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
