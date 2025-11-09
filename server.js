@@ -40,6 +40,8 @@ app.post("/predict", upload.single("image"), async (req, res) => {
       prediction = result[0];
     }
     res.json({ success: true, prediction });
+    console.log("Predicted value:",prediction);
+    
   } catch (error) {
     console.error("Prediction error:", error);
     res.status(500).json({ success: false, error: error.message });
