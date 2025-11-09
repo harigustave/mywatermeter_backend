@@ -29,8 +29,6 @@ app.post("/predict", upload.single("image"), async (req, res) => {
       image: imageBytes,
     });
 
-    console.log("Gradio result:", result);
-
     // Clean up temp file
     fs.unlinkSync(req.file.path);
 
@@ -41,7 +39,6 @@ app.post("/predict", upload.single("image"), async (req, res) => {
     } else if (Array.isArray(result) && result.length > 0) {
       prediction = result[0];
     }
-
     res.json({ success: true, prediction });
   } catch (error) {
     console.error("Prediction error:", error);
